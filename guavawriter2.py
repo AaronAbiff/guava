@@ -3,7 +3,6 @@ from youtube_transcript_api import YouTubeTranscriptApi
 import anthropic
 import urllib.parse
 import re
-import yaml
 from pathlib import Path
 from datetime import datetime
 
@@ -77,15 +76,10 @@ class GuavaWriter:
 
     def generate_ideas(self, transcript: str) -> list:
         """Generate ideas based on transcript using persona"""
-        st.write("Debug: Entering generate_ideas method")
-        
-        # Ensure we have content to work with
         if not transcript or len(transcript.strip()) < 10:
             st.error("Transcript is too short or empty")
             return []
             
-        st.write(f"Debug: Transcript length: {len(transcript)} characters")
-        
         prompt = f"""Having reviewed this transcript, I'll generate three distinct creative directions to explore.
 
 Here's my perspective:
@@ -100,60 +94,35 @@ Idea: [idea here]
 Remember to focus on the core concept without restating that it's for a 60-second video."""
         
         try:
-            st.write("Debug: Sending request to Claude")
             response = self.client.messages.create(
                 model="claude-3-sonnet-20240229",
-                max_tokens=1000,  # Increased for more detailed responses
+                max_tokens=1000,
                 temperature=0.7,
                 messages=[{"role": "user", "content": prompt}]
             )
             
-            st.write("Debug: Received response from Claude")
-            # Show complete response
-            st.write("Debug - Complete Claude response:")
-            st.code(response.content[0].text, language="text")
-            
-            # Parse ideas with more detailed logging
             ideas = []
             current_idea = None
-            st.write("Debug - Parsing response line by line:")
             
             for line in response.content[0].text.split('\n'):
-                st.write(f"Debug - Processing line: {line}")
-                
-                # Check for start of new idea
                 if line.strip().startswith('Idea') and ':' in line:
                     if current_idea:
                         ideas.append(current_idea)
                     current_idea = line.split(':', 1)[1].strip()
-                # Add description to current idea if we have one
                 elif current_idea and line.strip():
                     current_idea += " " + line.strip()
             
-            # Add the last idea if we have one
             if current_idea:
                 ideas.append(current_idea)
-            
-            st.write(f"Debug: Extracted {len(ideas)} ideas")
-            if len(ideas) > 0:
-                st.write("Debug - Final ideas list:")
-                for i, idea in enumerate(ideas, 1):
-                    st.write(f"Debug - Idea {i}: {idea}")
-            
-            if len(ideas) < 3:
-                st.warning(f"Only generated {len(ideas)} ideas instead of 3")
             
             return ideas[:3]
             
         except Exception as e:
             st.error(f"Error in idea generation: {str(e)}")
-            st.write("Debug - Full error:", repr(e))
             return []
 
     def generate_script(self, transcript: str, idea: str, direction: str, current_script: str = None) -> str:
         """Generate or revise script based on context"""
-        st.write("Debug: Starting script generation with persona")
-        
         base_prompt = f"""As Clio Maar, I am creating a 60-second intimate video essay about this AI development:
 {idea}
 
@@ -176,12 +145,8 @@ Remember: I'm sharing this development through my lens as an artist speaking to 
 
         if current_script and direction:
             prompt = f"{base_prompt}\n\nCurrent script:\n{current_script}\n\nDirection for revision:\n{direction}"
-            st.write("Debug: Revising existing script")
         else:
             prompt = f"{base_prompt}\n\nContext from source:\n{transcript}\n\nDirection:\n{direction}"
-            st.write("Debug: Creating new script")
-        
-        st.write("Debug: Sending to Claude with persona prompt")
         
         response = self.client.messages.create(
             model="claude-3-opus-20240229",
@@ -190,7 +155,6 @@ Remember: I'm sharing this development through my lens as an artist speaking to 
             messages=[{"role": "user", "content": prompt}]
         )
         
-        st.write("Debug: Received response from Claude")
         return response.content[0].text
 
     def format_revision_history(self) -> str:
@@ -246,24 +210,16 @@ def main():
                 transcript = writer.get_transcript(video_id)
                 st.session_state.current_context['transcript'] = transcript
                 
-                st.write("Debug: Starting idea generation...")
-                try:
-                    ideas = writer.generate_ideas(transcript)
-                    st.write(f"Debug: Generated {len(ideas)} ideas")
-                    
-                    if not ideas:
-                        st.error("No ideas were generated. Please try again.")
-                        return
-                        
-                    response = "I've been thinking about this piece, and I see three possibilities for a 60-second exploration:\n\n"
-                    for i, idea in enumerate(ideas, 1):
-                        response += f"{i}. {idea}\n"
-                    response += "\nWhich direction speaks to you?"
-                    st.write("Debug: Response formatted successfully")
-                except Exception as e:
-                    st.error(f"Error generating ideas: {str(e)}")
-                    st.write("Debug - Full error:", repr(e))
+                ideas = writer.generate_ideas(transcript)
+                
+                if not ideas:
+                    st.error("No ideas were generated. Please try again.")
                     return
+                    
+                response = "I've been thinking about this piece, and I see three possibilities for a 60-second exploration:\n\n"
+                for i, idea in enumerate(ideas, 1):
+                    response += f"{i}. {idea}\n"
+                response += "\nWhich direction speaks to you?"
                 
                 writer.add_message("assistant", response)
                 st.rerun()
@@ -284,21 +240,16 @@ def main():
     
     # Handle script generation and revision
     if st.session_state.current_context['selected_idea']:
-        st.write("Debug: Ready for script generation")
         direction = st.text_area("Enter your thoughts or feedback:")
         col1, col2 = st.columns([1,1])
         
         with col1:
             if st.button("Generate/Update Script 🚀"):
-                st.write("Debug: Starting script generation...")
                 with st.spinner("Working on it... 🐝"):
                     try:
                         current_script = st.session_state.current_context['current_script']
                         if current_script:
-                            st.write("Debug: Updating existing script")
                             st.session_state.current_context['revision_history'].append((current_script, direction))
-                        else:
-                            st.write("Debug: Creating new script")
                         
                         new_script = writer.generate_script(
                             st.session_state.current_context['transcript'],
@@ -307,13 +258,11 @@ def main():
                             current_script
                         )
                         
-                        st.write("Debug: Script generated successfully")
                         st.session_state.current_context['current_script'] = new_script
                         writer.add_message("assistant", f"Here's the {'revised' if current_script else 'new'} script:\n\n{new_script}")
                         st.rerun()
                     except Exception as e:
                         st.error(f"Error in script generation: {str(e)}")
-                        st.write("Debug - Full error:", repr(e))
         
         if st.session_state.current_context['current_script']:
             with col2:
@@ -344,4 +293,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
