@@ -6,9 +6,12 @@ import html
 import re
 
 # Initialize YouTube API
-@st.cache_resource
+@st.cache_data
+def get_api_key():
+    return st.secrets["youtube_api_key"]
+
 def get_youtube_client():
-    api_key = st.secrets["youtube_api_key"]
+    api_key = get_api_key()
     return build('youtube', 'v3', developerKey=api_key)
 
 def get_channel_info(youtube, channel_id):
