@@ -77,13 +77,13 @@ class GuavaWriter:
         """Generate a response using the persona"""
         full_prompt = f"{self.persona.dialogue_prompt}\n\nContext: {context}\n\nPrompt: {prompt}"
         
-        response = self.client.completion(
+        response = self.client.complete(
             model=model,
             prompt=full_prompt,
             max_tokens_to_sample=1000,
             temperature=0.7
         )
-        return response.completion
+        return response.complete
 
     def generate_ideas(self, transcript: str) -> list:
         """Generate ideas based on transcript using persona"""
@@ -105,7 +105,7 @@ class GuavaWriter:
     Remember to focus on the core concept without restating that it's for a 60-second video."""
         
         try:
-            response = self.client.completion(
+            response = self.client.complete(
                 model="claude-3-sonnet-20240229",
                 prompt=prompt,
                 max_tokens_to_sample=1000,
@@ -115,7 +115,7 @@ class GuavaWriter:
             ideas = []
             current_idea = None
             
-            for line in response.completion.split('\n'):
+            for line in response.complete.split('\n'):
                 if line.strip().startswith('Idea') and ':' in line:
                     if current_idea:
                         ideas.append(current_idea)
@@ -159,14 +159,14 @@ class GuavaWriter:
         else:
             prompt = f"{base_prompt}\n\nContext from source:\n{transcript}\n\nDirection:\n{direction}"
         
-        response = self.client.completion(
+        response = self.client.complete(
             model="claude-3-opus-20240229",
             prompt=prompt,
             max_tokens_to_sample=1000,
             temperature=0.7
         )
         
-        return response.completion
+        return response.complete
 
     def add_message(self, role: str, content: str):
         """Add a message to the conversation history"""
