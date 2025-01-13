@@ -1,6 +1,6 @@
 import streamlit as st
 from youtube_transcript_api import YouTubeTranscriptApi
-from anthropic import Client
+from anthropic import Anthropic
 import urllib.parse
 import re
 from pathlib import Path
@@ -33,11 +33,8 @@ class PersonaManager:
 
 class GuavaWriter:
     def __init__(self, api_key: str):
-        # Initialize Anthropic client with just the API key
-        self.client = Client(
-            api_key=api_key,
-            base_url="https://api.anthropic.com"  # Explicitly set base URL
-        )
+        # Simple initialization for 0.7.7
+        self.client = Anthropic(api_key=api_key)
         self.persona = PersonaManager()
         
         # Initialize conversation history
@@ -72,7 +69,10 @@ class GuavaWriter:
         
         response = self.client.messages.create(
             model=model,
-            messages=[{"role": "user", "content": full_prompt}],
+            system=self.persona.dialogue_prompt,
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
             max_tokens=1000,
             temperature=0.7
         )
