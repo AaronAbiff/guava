@@ -168,7 +168,7 @@ def generate_script(self, transcript: str, idea: str, direction: str, current_sc
         
         return response.completion
 
-    def add_message(self, role: str, content: str):
+def add_message(self, role: str, content: str):
         """Add a message to the conversation history"""
         st.session_state.messages.append({"role": role, "content": content})
 
