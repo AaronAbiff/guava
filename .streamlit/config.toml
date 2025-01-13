@@ -3,3 +3,9 @@ primaryColor = "#033731"
 backgroundColor = "#033731"
 secondaryBackgroundColor = "#0a4740"
 textColor = "#FFFFFF"
+[server]
+maxUploadSize = 200
+enableXsrfProtection = true
+enableCORS = false
+[browser]
+gatherUsageStats = false
