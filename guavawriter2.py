@@ -33,15 +33,9 @@ class PersonaManager:
 
 class GuavaWriter:
     def __init__(self, api_key: str):
-        # Initialize Anthropic client with minimal configuration
+        # Initialize Anthropic client with just the API key
         self.client = anthropic.Anthropic(
-            api_key=api_key,
-            # Set default timeout
-            timeout=60.0,
-            # Disable default headers that might conflict with proxy
-            default_headers={},
-            # Use the default HTTP client
-            http_client=None
+            api_key=api_key
         )
         
         self.persona = PersonaManager()
