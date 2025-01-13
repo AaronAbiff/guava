@@ -1,10 +1,11 @@
 import streamlit as st
 from youtube_transcript_api import YouTubeTranscriptApi
-from anthropic import Anthropic
+import anthropic
 import urllib.parse
 import re
 from pathlib import Path
 from datetime import datetime
+import httpx
 
 class PersonaManager:
     def __init__(self, persona_file: str = "persona.md"):
@@ -33,8 +34,17 @@ class PersonaManager:
 
 class GuavaWriter:
     def __init__(self, api_key: str):
-        # Simple initialization for 0.7.7
-        self.client = Anthropic(api_key=api_key)
+        # Create a basic httpx client without proxies
+        http_client = httpx.Client(
+            base_url="https://api.anthropic.com",
+            timeout=httpx.Timeout(timeout=30.0)
+        )
+        
+        # Initialize Anthropic client with custom http client
+        self.client = anthropic.Anthropic(
+            api_key=api_key,
+            http_client=http_client
+        )
         self.persona = PersonaManager()
         
         # Initialize conversation history
