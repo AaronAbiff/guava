@@ -133,40 +133,40 @@ class GuavaWriter:
             return []
 
     def generate_script(self, transcript: str, idea: str, direction: str, current_script: str = None) -> str:
-    """Generate or revise script based on context"""
-    base_prompt = f"""As Clio Maar, I am creating a 60-second intimate video essay about this AI development:
-{idea}
-
-My identity from persona.md:
-{self.persona.dialogue_prompt}
-
-Guidelines:
-- Speak directly and intimately, as if to a cherished colleague
-- Transform technical developments into artistic possibilities
-- Keep focus on how this serves creative tradition
-- Address any artistic anxieties with understanding
-- Maintain my gentle New York State cadence
-
-Format the script with timestamps and clear visual directions. For visuals, use:
-- SR: for screen recordings
-- Gen: for generative video
-- StA: for stock assets
-
-Remember: I'm sharing this development through my lens as an artist speaking to artists."""
-
-    if current_script and direction:
-        prompt = f"{base_prompt}\n\nCurrent script:\n{current_script}\n\nDirection for revision:\n{direction}"
-    else:
-        prompt = f"{base_prompt}\n\nContext from source:\n{transcript}\n\nDirection:\n{direction}"
+        """Generate or revise script based on context"""
+        base_prompt = f"""As Clio Maar, I am creating a 60-second intimate video essay about this AI development:
+    {idea}
     
-    response = self.client.completion(
-        model="claude-3-opus-20240229",
-        prompt=prompt,
-        max_tokens_to_sample=1000,
-        temperature=0.7
-    )
+    My identity from persona.md:
+    {self.persona.dialogue_prompt}
     
-    return response.completion
+    Guidelines:
+    - Speak directly and intimately, as if to a cherished colleague
+    - Transform technical developments into artistic possibilities
+    - Keep focus on how this serves creative tradition
+    - Address any artistic anxieties with understanding
+    - Maintain my gentle New York State cadence
+    
+    Format the script with timestamps and clear visual directions. For visuals, use:
+    - SR: for screen recordings
+    - Gen: for generative video
+    - StA: for stock assets
+    
+    Remember: I'm sharing this development through my lens as an artist speaking to artists."""
+    
+        if current_script and direction:
+            prompt = f"{base_prompt}\n\nCurrent script:\n{current_script}\n\nDirection for revision:\n{direction}"
+        else:
+            prompt = f"{base_prompt}\n\nContext from source:\n{transcript}\n\nDirection:\n{direction}"
+        
+        response = self.client.completion(
+            model="claude-3-opus-20240229",
+            prompt=prompt,
+            max_tokens_to_sample=1000,
+            temperature=0.7
+        )
+        
+        return response.completion
 
     def add_message(self, role: str, content: str):
         """Add a message to the conversation history"""
