@@ -3,3 +3,5 @@ anthropic==0.8.1
 youtube-transcript-api==0.6.2
 google-api-python-client==2.114.0
 pandas==2.2.0
+urllib3==2.3.0
+pathlib
