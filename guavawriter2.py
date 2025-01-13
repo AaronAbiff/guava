@@ -74,16 +74,16 @@ class GuavaWriter:
         return ' '.join(entry['text'] for entry in transcript_list)
 
     def generate_response(self, prompt: str, context: str = "", model: str = "claude-3-sonnet-20240229") -> str:
-    """Generate a response using the persona"""
-    full_prompt = f"{self.persona.dialogue_prompt}\n\nContext: {context}\n\nPrompt: {prompt}"
-    
-    response = self.client.completion(
-        model=model,
-        prompt=full_prompt,
-        max_tokens_to_sample=1000,
-        temperature=0.7
-    )
-    return response.completion
+        """Generate a response using the persona"""
+        full_prompt = f"{self.persona.dialogue_prompt}\n\nContext: {context}\n\nPrompt: {prompt}"
+        
+        response = self.client.completion(
+            model=model,
+            prompt=full_prompt,
+            max_tokens_to_sample=1000,
+            temperature=0.7
+        )
+        return response.completion
 
     def generate_ideas(self, transcript: str) -> list:
     """Generate ideas based on transcript using persona"""
