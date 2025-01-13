@@ -33,7 +33,23 @@ class PersonaManager:
 
 class GuavaWriter:
     def __init__(self, api_key: str):
-        self.client = anthropic.Anthropic(api_key=api_key)
+        # Initialize Anthropic client with minimal configuration
+        client_kwargs = {
+            'api_key': api_key,
+        }
+        
+        # Explicitly set HTTP client configuration
+        http_client = anthropic.HttpxClient(
+            base_url="https://api.anthropic.com",
+            follow_redirects=True,
+            timeout=60.0
+        )
+        
+        self.client = anthropic.Anthropic(
+            **client_kwargs,
+            http_client=http_client
+        )
+        
         self.persona = PersonaManager()
         
         # Initialize conversation history
