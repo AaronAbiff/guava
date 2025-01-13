@@ -34,10 +34,7 @@ class PersonaManager:
 class GuavaWriter:
     def __init__(self, api_key: str):
         # Initialize Anthropic client with just the API key
-        self.client = anthropic.Anthropic(
-            api_key=api_key
-        )
-        
+        self.client = anthropic.Client(api_key=api_key)  # Changed from anthropic.Anthropic
         self.persona = PersonaManager()
         
         # Initialize conversation history
@@ -72,9 +69,9 @@ class GuavaWriter:
         
         response = self.client.messages.create(
             model=model,
+            messages=[{"role": "user", "content": full_prompt}],
             max_tokens=1000,
-            temperature=0.7,
-            messages=[{"role": "user", "content": full_prompt}]
+            temperature=0.7
         )
         return response.content[0].text
 
@@ -100,9 +97,9 @@ Remember to focus on the core concept without restating that it's for a 60-secon
         try:
             response = self.client.messages.create(
                 model="claude-3-sonnet-20240229",
+                messages=[{"role": "user", "content": prompt}],
                 max_tokens=1000,
-                temperature=0.7,
-                messages=[{"role": "user", "content": prompt}]
+                temperature=0.7
             )
             
             ideas = []
@@ -154,27 +151,19 @@ Remember: I'm sharing this development through my lens as an artist speaking to 
         
         response = self.client.messages.create(
             model="claude-3-opus-20240229",
+            messages=[{"role": "user", "content": prompt}],
             max_tokens=1000,
-            temperature=0.7,
-            messages=[{"role": "user", "content": prompt}]
+            temperature=0.7
         )
         
         return response.content[0].text
-
-    def format_revision_history(self) -> str:
-        """Format revision history for the model"""
-        history = st.session_state.current_context['revision_history']
-        formatted = ""
-        for i, (script, feedback) in enumerate(history, 1):
-            formatted += f"\nVERSION {i}:\n{script}\nFEEDBACK:\n{feedback}\n---"
-        return formatted
 
     def add_message(self, role: str, content: str):
         """Add a message to the conversation history"""
         st.session_state.messages.append({"role": role, "content": content})
 
 def main():
-    st.markdown("""
+    st.markdown(r"""
         <style>
             .stApp {
                 background-color: #033731;
@@ -271,7 +260,7 @@ def main():
         if st.session_state.current_context['current_script']:
             with col2:
                 if st.button("Approve ✅"):
-                    st.markdown("""
+                    st.markdown(r"""
                     ```
                    
                      _   _ _____ _____ _____    _ 
